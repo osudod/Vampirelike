@@ -1,38 +1,48 @@
 import pygame
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
-FPS = 60
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (150, 150, 150)
-RED = (255, 0, 0)
+import pygame_gui
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Игра с главным меню")
+pygame.init()
+
+
+pygame.display.set_caption('Quick Start')
+
+window_surface = pygame.display.set_mode((800, 600))
+
+
+background = pygame.Surface((800, 600))
+
+background.fill(pygame.Color('#000000'))
+
+manager = pygame_gui.UIManager((800, 600),theme_path="new.json")
+
+is_running = True
+
 clock = pygame.time.Clock()
 
-font_large = pygame.font.SysFont('Arial', 64)
-font_small = pygame.font.SysFont('Arial', 32)
+hello_button = pygame_gui.elements.UIButton(relative_rect=pygame.Rect((350, 275), (100, 50)), text='Say Hello', manager=manager)
 
-class Button:
-    def __init__(self, x, y, width, height, text, color=GRAY):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.text = text
-        self.color = color
+while is_running:
 
-    def draw(self):
-        # Рисуем кнопку с подсветкой при наведении
-        mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            highlight_color = (200, 200, 200)  # Светлый оттенок
-        else:
-            highlight_color = GRAY
-            
-        pygame.draw.rect(screen, highlight_color, self.rect)
-        pygame.draw.rect(screen, BLACK, self.rect, 3)  # Граница
+    time_delta = clock.tick(60)/1000.0
+
+    for event in pygame.event.get():
+
+        if event.type == pygame.QUIT:
+
+            is_running = False
         
-        # Рисуем текст кнопки
-        text_surface = font_small.render(self.text, True, WHITE)
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        screen.blit(text_surface, text_rect)
+        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+
+            if event.ui_element == hello_button:
+
+                print('Hello World!')
+
+        manager.process_events(event)
+
+    manager.update(time_delta)
+
+    window_surface.blit(background, (0, 0))
+    manager.draw_ui(window_surface)
+
+    pygame.display.update()
