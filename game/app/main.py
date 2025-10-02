@@ -1,6 +1,5 @@
 
 import pygame
-from ..assets.components.GUi import Button
 pygame.init()
 
 # Константы
@@ -21,7 +20,27 @@ clock = pygame.time.Clock()
 font_large = pygame.font.SysFont('Arial', 64)
 font_small = pygame.font.SysFont('Arial', 32)
 
+class Button:
+    def __init__(self, x, y, width, height, text, color=GRAY):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+        self.color = color
 
+    def draw(self):
+        # Рисуем кнопку с подсветкой при наведении
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            highlight_color = (200, 200, 200)  # Светлый оттенок
+        else:
+            highlight_color = GRAY
+            
+        pygame.draw.rect(screen, highlight_color, self.rect)
+        pygame.draw.rect(screen, BLACK, self.rect, 3)  # Граница
+        
+        # Рисуем текст кнопки
+        text_surface = font_small.render(self.text, True, WHITE)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        screen.blit(text_surface, text_rect)
 
 # Создаем объекты меню
 play_button = Button(250, 200, 300, 60, "Играть")
@@ -77,8 +96,8 @@ while running:
     if game_state == "menu":
         draw_menu()
     elif game_state == "playing":
-        screen.fill((0, 0, 0))
-        pygame.display.flip()
+            screen.fill((0, 0, 0))
+            pygame.display.flip()
     clock.tick(FPS)
 
 pygame.quit()
