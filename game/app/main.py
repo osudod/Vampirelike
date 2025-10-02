@@ -1,6 +1,16 @@
 
+import os
+import sys
+
+if not __package__:
+    __package__ = (
+        (lambda p, n:
+        (".".join(p[-n:]), sys.path.insert(0, os.sep.join(p[:-n])))[0])(
+            os.path.realpath(__file__).split(os.sep)[:-1], 2))
+
 import pygame
 import level1
+from ..assets.components.Buttons import Button
 
 pygame.init()
 
@@ -16,25 +26,6 @@ clock = pygame.time.Clock()
 font_large = pygame.font.SysFont('Arial', 64)
 font_small = pygame.font.SysFont('Arial', 32)
 
-class Button:
-    def __init__(self, x, y, width, height, text, color="#5a2323"):
-        self.rect = pygame.Rect(x, y, width, height)
-        self.text = text
-        self.color = color
-
-    def draw(self):
-        mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            highlight_color = "#9e3b3b" 
-        else:
-            highlight_color = self.color
-            
-        pygame.draw.rect(screen, highlight_color, self.rect)
-        pygame.draw.rect(screen, "#000000", self.rect, 3) 
-        
-        text_surface = font_small.render(self.text, True, "#ffffff")
-        text_rect = text_surface.get_rect(center=self.rect.center)
-        screen.blit(text_surface, text_rect)
 
 play_button = Button(250, 200, 300, 60, "Играть")
 settings_button = Button(250, 300, 300, 60, "Настройки")
@@ -48,9 +39,9 @@ def draw_menu():
     title = font_large.render("Dead world", True, "#ffffff")
     title_rect = title.get_rect(center=(SCREEN_WIDTH//2, 100))
     
-    play_button.draw()
-    settings_button.draw()
-    exit_button.draw()
+    play_button.draw(screen=screen, font=font_small)
+    settings_button.draw(screen=screen, font=font_small)
+    exit_button.draw(screen=screen, font=font_small)
     
     screen.blit(title, title_rect)
     
@@ -62,7 +53,7 @@ def draw_settings():
     title = font_large.render("Настройки", True, "#ffffff")
     title_rect = title.get_rect(center=(SCREEN_WIDTH//2, 100))
     
-    back_button_settings.draw()
+    back_button_settings.draw(screen=screen, font=font_small)
     
     screen.blit(title, title_rect)
     
@@ -87,7 +78,6 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-            
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             clicked_option = handle_menu_click(event.pos)
             if clicked_option == "играть":
