@@ -1,0 +1,29 @@
+# Файлы Python
+pycache/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.env
+game_py/
+
+# Файлы операционных систем
+.DS_Store
+Thumbs.db
+
+# Файлы редакторов
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Файлы pygame/артефакты сборки
+*.spec
+build/
+dist/
+
+# Временные файлы и логи
+*.log
+*.tmp
