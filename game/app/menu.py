@@ -7,6 +7,8 @@ def play(screen):
     from pygame_widgets.dropdown import Dropdown
     import pygame_widgets
     from Buttons import Button
+    from level1 import start1
+    from level2 import start2
     
     THEME = "#984141"
     SCREEN_WIDTH = 800
@@ -18,7 +20,7 @@ def play(screen):
     dropdown_player = Dropdown(screen, 300, 200, 200, 50, name='Select Player',choices=['Player1','Player2','Player3'], colour=(255,0,0), values=[1, 2, 3], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
     dropdown_stage = Dropdown(screen, 300, 300, 200, 50, name='Select Stage',choices=["Stage 1", "Stage 2"], colour=(255,0,0), values=[1, 2], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
     back_button_game = Button(40, 75, 100, 60,"Назад")
-    play_button_game = Button(200, 400, 100, 60,"Играть")
+    play_button_game = Button(300, 500, 200, 80,"Играть")
     
     title = font_large.render("Выбор игры", True, "#ffffff")
     title_rect = title.get_rect(center=(SCREEN_WIDTH//2, 100))
@@ -65,9 +67,13 @@ def play(screen):
                     stage = dropdown_stage.getSelected()
                     print(f"Player: {player} Stage: {stage}")
                     if player and stage:
-                        running = False
-                        dropdown_player.hide()
-                        dropdown_stage.hide()
+                        if stage == 1:
+                            start1(screen)
+                        elif stage == 2:
+                            start2(screen)
+                        # running = False
+                        # dropdown_player.hide()
+                        # dropdown_stage.hide()
         
         pygame_widgets.update(events)
         pygame.display.flip()
