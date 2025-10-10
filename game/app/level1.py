@@ -4,6 +4,8 @@ def start1(screen):
     import pygame
     import sys
     from math import sqrt
+    from Player import Player
+    from Melee_zombie import Melee
     
     def tran_time(timer):
         if len(str(timer)) == 1 and timer < 60:
@@ -22,15 +24,17 @@ def start1(screen):
     font_large = pygame.font.SysFont('Arial', 64)
     SCREEN_WIDTH = 800
     
+    monsters = []
+    
     timer = 0
     pygame.time.set_timer(pygame.USEREVENT, 1000)
     text = tran_time(timer)
     clock = pygame.time.Clock()
     
-    player_image = pygame.image.load("../assets/player/New_Piskel.png").convert_alpha()
-    speed = 5
     x = 800 // 2
-    y = 500 // 2
+    y = 600 // 2
+    player1 = Player(image="../assets/player/New_Piskel.png",damage=1, hp=100, speed=5)
+    speed = player1.get_speed()
     motion = "stop"
     
     
@@ -60,19 +64,19 @@ def start1(screen):
         if keys[pygame.K_DOWN]:
             y += speed
         if keys[pygame.K_LEFT] and keys[pygame.K_DOWN]:
-            x -= speed * (1/sqrt(2))
-            y += speed * (1/sqrt(2))
+            x -= speed * (sqrt(1/5) / 10)
+            y += speed * (sqrt(1/5) / 10)
         if keys[pygame.K_LEFT] and keys[pygame.K_UP]:
-            x -= speed * (1/sqrt(2))
-            y -= speed * (1/sqrt(2))
+            x -= speed * (sqrt(1/5) / 10)
+            y -= speed * (sqrt(1/5) / 10)
         if keys[pygame.K_RIGHT] and keys[pygame.K_DOWN]:
-            x += speed * (1/sqrt(2))
-            y += speed * (1/sqrt(2))
+            x += speed * (sqrt(1/5) / 10)
+            y += speed * (sqrt(1/5) / 10)
         if keys[pygame.K_RIGHT] and keys[pygame.K_UP]:
-            x -= speed * (1/sqrt(2))
-            y -= speed * (1/sqrt(2))
+            x -= speed * (sqrt(1/5) / 10)
+            y -= speed * (sqrt(1/5) / 10)
         
-        screen.blit(player_image,(x,y))
+        player1.draw(screen=screen,x=x,y=y)
         
         clock.tick(60)
         pygame.display.flip()
