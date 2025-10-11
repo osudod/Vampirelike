@@ -13,3 +13,4 @@ class Player(Char):
     
     def get_speed(self):
         return super().get_speed()
+    
