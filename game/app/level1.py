@@ -1,5 +1,47 @@
 
-def start1(screen):
+def pause(screen):
+    
+    import pygame
+    import sys
+    from Buttons import Button
+    
+    font_large = pygame.font.SysFont('Arial', 64)
+    font_small = pygame.font.SysFont('Arial', 32)
+    
+    escape_button = Button(50,50,210,70,"Назад в игру")
+    menu_button = Button(50,150,230,70,"Выход в меню")
+    
+    def handle_menu_click(pos):
+        if escape_button.rect.collidepoint(pos):
+            return "назад"
+        if menu_button.rect.collidepoint(pos):
+            return "меню"
+
+    
+    running = True
+    while running:
+        screen.fill("#727272ff")
+        
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.QUIT:
+                running = False
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                clicked_option = handle_menu_click(event.pos)
+                if clicked_option == "назад":
+                    running = False
+                if clicked_option == "меню":
+                    return "меню"
+        
+        keys = pygame.key.get_pressed()
+        
+        escape_button.draw(screen,font_small)
+        menu_button.draw(screen, font_small)
+        
+        pygame.display.flip()
+
+def start1(screen, stage, player):
     
     import pygame
     import sys
@@ -30,7 +72,10 @@ def start1(screen):
                     if str(monster.attack(player1)).isdigit():
                         player1.hp = monster.attack(player1)
     
-    pygame.mixer.music.load("../assets/music/82872.mp3")
+    if stage == 1:
+        pygame.mixer.music.load("../assets/music/82872.mp3")
+    if stage == 2:
+        pygame.mixer.music.load("../assets/music/kino-less-than-i-used-to.mp3")
     mas = {}
     with open("save.json") as file:
             mas = json.load(file)
@@ -41,7 +86,9 @@ def start1(screen):
     font_small = pygame.font.SysFont('Arial', 32)
     font_large = pygame.font.SysFont('Arial', 64)
     SCREEN_WIDTH = 800
+    SCREEN_HEIGHT = 600
     
+    spawn_mons = [(10, SCREEN_HEIGHT // 2),(SCREEN_WIDTH // 2, 10),(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2),(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50)]
     monsters = []
     
     timer = 0
@@ -51,13 +98,32 @@ def start1(screen):
     
     x = 800 // 2
     y = 600 // 2
-    player1 = Player(image="../assets/player/New_Piskel.png",damage=1, hp=100, speed=5)
+    if player == 1:
+        image = "../assets/player/melee.png"
+        dmg = 1
+        hp = 100
+        spd = 5
+    if player == 2:
+        image = "../assets/player/gun.png"
+        dmg = 10
+        hp = 70
+        spd = 3
+    if player == 3:
+        image = "../assets/player/bomber.png"
+        dmg = 15
+        hp = 30
+        spd = 7
+        
+    player1 = Player(image=image,damage=dmg, hp=hp, speed=spd)
     speed = player1.get_speed()
-    motion = "stop"
     
+    mode = "play"
     running = True
     while running:
-        screen.fill("#4a964a")
+        if stage == 1:
+            screen.fill("#4a964a")
+        if stage == 2:
+            screen.fill("#4a5596")
         
         
         
@@ -67,34 +133,48 @@ def start1(screen):
                 running = False
                 sys.exit()
             if event.type == pygame.USEREVENT: 
-                timer += 1
-                text = tran_time(timer) if timer <= 1800 else "30:00"
+                if mode == "play":
+                    timer += 1
+                    text = tran_time(timer) if timer <= 1800 else "30:00"
         
         keys = pygame.key.get_pressed()
         
-        
+        if keys[pygame.K_ESCAPE]:
+            mode = "pause"
+            valuy = pause(screen)
+            if valuy == "меню":
+                running = False
+            mode = "play"
         
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
-            x -= speed
+            if x >= 6:
+                x -= speed
         if keys[pygame.K_RIGHT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
-            x += speed
+            if x <= 764:
+                x += speed
         if keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
-            y -= speed
+            if y >= 6:
+                y -= speed
         if keys[pygame.K_DOWN] and not keys[pygame.K_UP] and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
-            y += speed
+            if y <= 554:
+                y += speed
             print(player1.hp)
         if keys[pygame.K_LEFT] and keys[pygame.K_DOWN] and not keys[pygame.K_UP] and not keys[pygame.K_RIGHT]:
-            x -= speed - 1
-            y += speed - 1
+            if x >= 6 and y <=554:
+                x -= speed - 1
+                y += speed - 1
         if keys[pygame.K_LEFT] and keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
-            x -= speed - 1
-            y -= speed - 1
+            if x >= 6 and y >= 6:
+                x -= speed - 1
+                y -= speed - 1
         if keys[pygame.K_RIGHT] and keys[pygame.K_DOWN] and not keys[pygame.K_UP] and not keys[pygame.K_LEFT]:
-            x += speed - 1
-            y += speed - 1
+            if x <= 764 and y <= 554:
+                x += speed - 1
+                y += speed - 1
         if keys[pygame.K_RIGHT] and keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
-            x += speed - 1
-            y -= speed - 1
+            if x <= 764 and y >= 6:
+                x += speed - 1
+                y -= speed - 1
         
         
         if timer % 60 == 0 and timer != 0:
@@ -104,7 +184,7 @@ def start1(screen):
         
         if monsters:
             for i in monsters:
-                i.draw(screen, randint(0, 799), randint(0,599))
+                i.draw(screen, *spawn_mons[randint(0,3)])
         
         collide_mon(monsters)
         

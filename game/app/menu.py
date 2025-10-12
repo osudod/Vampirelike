@@ -17,7 +17,7 @@ def play(screen):
     font_small = pygame.font.SysFont('Arial', 32)
     font_large = pygame.font.SysFont('Arial', 64)
     
-    dropdown_player = Dropdown(screen, 300, 200, 200, 50, name='Select Player',choices=['Player1','Player2','Player3'], colour=(255,0,0), values=[1, 2, 3], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
+    dropdown_player = Dropdown(screen, 300, 200, 200, 50, name='-',choices=['Самурай','Стрелок','Подрывник'], colour=(255,0,0), values=[1, 2, 3], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
     dropdown_stage = Dropdown(screen, 300, 300, 200, 50, name='Select Stage',choices=["Stage 1", "Stage 2"], colour=(255,0,0), values=[1, 2], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
     back_button_game = Button(40, 75, 100, 60,"Назад")
     play_button_game = Button(300, 500, 200, 80,"Играть")
@@ -67,10 +67,10 @@ def play(screen):
                     stage = dropdown_stage.getSelected()
                     print(f"Player: {player} Stage: {stage}")
                     if player and stage:
-                        if stage == 1:
-                            start1(screen)
-                        elif stage == 2:
-                            start2(screen)
+                        # if stage == 1:
+                        start1(screen, stage, player)
+                        # elif stage == 2:
+                        #     start2(screen)
                         # running = False
                         # dropdown_player.hide()
                         # dropdown_stage.hide()
