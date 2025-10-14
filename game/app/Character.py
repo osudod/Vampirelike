@@ -2,12 +2,14 @@ import pygame
 
 class Char:
     
-    def __init__(self, image, damage, hp, speed):
+    def __init__(self, image, damage, hp, speed, x, y):
         self.image = pygame.image.load(image)
         self.damage = damage
         self.hp = hp
         self.speed = speed
         self.rect = self.image.get_rect()
+        self.x = x
+        self.y = y
     
     def draw(self, screen, x, y):
         screen.blit(self.image,(x, y))
