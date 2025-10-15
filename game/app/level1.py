@@ -51,6 +51,7 @@ def start1(screen, stage, player):
     from Melee_zombie import Melee
     import json
     from random import randint, uniform
+    from Melee_player import MeleePlayer
     
     def tran_time(timer):
         '''Transfer time(seconds) -> time(00:00)'''
@@ -108,7 +109,7 @@ def start1(screen, stage, player):
         hp = 30
         spd = 7
         
-    player1 = Player(image=image,damage=dmg, hp=hp, speed=spd, x=x, y=y)
+    player1 = MeleePlayer(image=image,damage=dmg, hp=hp, speed=spd, x=x, y=y)
     speed = player1.get_speed()
     
     mode = "play"
@@ -139,6 +140,7 @@ def start1(screen, stage, player):
             if valuy == "меню":
                 running = False
             mode = "play"
+            
         
         if keys[pygame.K_LEFT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
             if x >= 6:
@@ -170,11 +172,13 @@ def start1(screen, stage, player):
                 y -= speed - 1
         
         
-        if timer % 60 == 0 and timer != 0:
+        if timer % 60 == 0:
             loc = spawn_mons[randint(0,3)]
             monsters.append(Melee(image="../assets/enemes/New Piskel-1.png.png", damage=5, hp=50, speed=uniform(0,1),x=loc[0], y=loc[1]))
         
+        player1.auto_attack(monsters)
         player1.draw(screen=screen,x=x,y=y)
+        player1.draw_slash(screen)
         
         if monsters:
             for i in monsters:
@@ -187,8 +191,8 @@ def start1(screen, stage, player):
                 if monr.colliderect(pla):
                     if str(i.attack(player1)).isdigit():
                         player1.hp = i.attack(player1)
-                    else:
-                        print(i.attack(player1))
+                    # else:
+                    #     print(i.attack(player1))
         
         
         screen.blit(font_large.render(text, True, "#ffffff"), (SCREEN_WIDTH//2-85, 30))

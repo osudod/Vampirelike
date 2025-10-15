@@ -7,7 +7,7 @@ class Char:
         self.damage = damage
         self.hp = hp
         self.speed = speed
-        self.rect = self.image.get_rect()
+        self.rect = self.image.get_rect(topleft=(x, y))
         self.x = x
         self.y = y
     
