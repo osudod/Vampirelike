@@ -3,12 +3,6 @@ import os
 import sys
 import math
 
-# if not __package__:
-#     __package__ = ((lambda p, d:
-#                     (".".join(p[-(n := p[::-1].index(d) + 1):]),
-#                     sys.path.insert(0, os.sep.join(p[:-n])))[0])(
-#                         os.path.realpath(__file__).split(os.sep)[:-1], "game"))
-
 import pygame
 from menu import play
 from Settings import draw_settings
@@ -28,10 +22,6 @@ clock = pygame.time.Clock()
 
 font_large = pygame.font.SysFont('Arial', 64)
 font_small = pygame.font.SysFont('Arial', 32)
-
-# play_button = Button(screen,250,200,300,60,text="Играть", font_size=32, inactiveColour="#5a2323", hoverColour="#ff7777",textColour="#ffffff", pressedColour="#ff0000", onClick=lambda: play(screen))
-# settings_button = Button(screen,250,300,300,60,text="Настройки", font_size=32, inactiveColour="#5a2323", hoverColour="#ff7777",textColour="#ffffff", pressedColour="#ff0000", onClick=lambda: settings(screen, play_button, settings_button, exit_button))
-# exit_button = Button(screen,250,400,300,60,text="Выход", font_size=32, inactiveColour="#5a2323", hoverColour="#ff7777",textColour="#ffffff", pressedColour="#ff0000", onClick=lambda: exit1())
 
 play_button = Button(250, 200, 300, 60, "Играть")
 settings_button = Button(250, 300, 300, 60, "Настройки")

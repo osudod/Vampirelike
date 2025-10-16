@@ -14,13 +14,17 @@ class Melee(Char):
     def get_speed(self):
         return super().get_speed()
     
-    def move(self, x, y):
-        if x > self.x:
-            self.x = self.x + self.speed
-        elif x < self.x:
-            self.x = self.x - self.speed
-        if y > self.y:
-            self.y = self.y + self.speed
-        elif y < self.y:
-            self.y = self.y - self.speed
+    def move(self,target_rect):
+        if target_rect.x > self.rect.x:
+            print("down")
+            self.rect.x += self.speed
+        if target_rect.x < self.rect.x:
+            print("up")
+            self.rect.x -= self.speed
+        if target_rect.y > self.rect.y:
+            print("right")
+            self.rect.y += self.speed
+        if target_rect.y < self.rect.y:
+            print("left")
+            self.rect.y -= self.speed
     

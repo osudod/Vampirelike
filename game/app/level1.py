@@ -52,6 +52,7 @@ def start1(screen, stage, player):
     import json
     from random import randint, uniform
     from Melee_player import MeleePlayer
+    from GunPlayer import GunPlayer
     
     def tran_time(timer):
         '''Transfer time(seconds) -> time(00:00)'''
@@ -97,21 +98,21 @@ def start1(screen, stage, player):
         image = "../assets/player/melee.png"
         dmg = 1
         hp = 100
-        spd = 5
+        spd = 2
+        player1 = MeleePlayer(image=image,damage=dmg, hp=hp, speed=spd, x=x, y=y)
     if player == 2:
         image = "../assets/player/gun.png"
         dmg = 10
         hp = 70
         spd = 3
+        player1 = GunPlayer(image, dmg, hp, spd,x,y)
+        bullets = []
     if player == 3:
         image = "../assets/player/bomber.png"
         dmg = 15
         hp = 30
         spd = 7
         
-    player1 = MeleePlayer(image=image,damage=dmg, hp=hp, speed=spd, x=x, y=y)
-    speed = player1.get_speed()
-    
     mode = "play"
     running = True
     while running:
@@ -142,52 +143,37 @@ def start1(screen, stage, player):
             mode = "play"
             
         
-        if keys[pygame.K_LEFT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
-            if x >= 6:
-                x -= speed
-        if keys[pygame.K_RIGHT] and not keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
-            if x <= 764:
-                x += speed
-        if keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
-            if y >= 6:
-                y -= speed
-        if keys[pygame.K_DOWN] and not keys[pygame.K_UP] and not keys[pygame.K_LEFT] and not keys[pygame.K_RIGHT]:
-            if y <= 554:
-                y += speed
-        if keys[pygame.K_LEFT] and keys[pygame.K_DOWN] and not keys[pygame.K_UP] and not keys[pygame.K_RIGHT]:
-            if x >= 6 and y <=554:
-                x -= speed - 1
-                y += speed - 1
-        if keys[pygame.K_LEFT] and keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_RIGHT]:
-            if x >= 6 and y >= 6:
-                x -= speed - 1
-                y -= speed - 1
-        if keys[pygame.K_RIGHT] and keys[pygame.K_DOWN] and not keys[pygame.K_UP] and not keys[pygame.K_LEFT]:
-            if x <= 764 and y <= 554:
-                x += speed - 1
-                y += speed - 1
-        if keys[pygame.K_RIGHT] and keys[pygame.K_UP] and not keys[pygame.K_DOWN] and not keys[pygame.K_LEFT]:
-            if x <= 764 and y >= 6:
-                x += speed - 1
-                y -= speed - 1
+
         
         
         if timer % 60 == 0:
             loc = spawn_mons[randint(0,3)]
             monsters.append(Melee(image="../assets/enemes/New Piskel-1.png.png", damage=5, hp=50, speed=uniform(0,1),x=loc[0], y=loc[1]))
         
-        player1.auto_attack(monsters)
-        player1.draw(screen=screen,x=x,y=y)
-        player1.draw_slash(screen)
-        
+        x1 = player1.move(keys)[0]
+        y1 = player1.move(keys)[1]
+        player1.draw(screen=screen, x=x1, y=y1 )
+        if player == 1:
+            player1.auto_attack(monsters)
+            player1.draw_slash(screen)
+        elif player == 2:
+            player1.attack(monsters,bullets)
+            for bullet in bullets[:]:
+                if not bullet.update():
+                    bullets.remove(bullet)
+            for bullet in bullets:
+                bullet.draw(screen)
+            if hasattr(player1, "draw_flash"):
+                player1.draw_flash(screen)
+
         if monsters:
             for i in monsters:
-                i.draw(screen, i.x, i.y)
-                i.move(x, y)
+                i.draw(screen, i.rect.x, i.rect.y)
+                i.move(player1.rect)
                 monr = i.image.get_rect()
-                monr.topleft = (i.x, i.y)
+                # monr.topleft = (i.x, i.y)
                 pla = player1.image.get_rect()
-                pla.topleft = (x, y)
+                # pla.topleft = (x, y)
                 if monr.colliderect(pla):
                     if str(i.attack(player1)).isdigit():
                         player1.hp = i.attack(player1)

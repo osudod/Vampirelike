@@ -7,9 +7,7 @@ class Char:
         self.damage = damage
         self.hp = hp
         self.speed = speed
-        self.rect = self.image.get_rect(topleft=(x, y))
-        self.x = x
-        self.y = y
+        self.rect = self.image.get_rect(center=(x, y))
     
     def draw(self, screen, x, y):
         screen.blit(self.image,(x, y))
@@ -19,3 +17,5 @@ class Char:
     
     def get_speed(self):
         return self.speed
+    
+    
