@@ -26,8 +26,8 @@ class GunPlayer(Player):
 
         # Создаем пулю
         bullet_speed = self.speed + 3
-        print(self.rect.center[0], self.rect.center[1])
-        print(f"mon - {nearest.rect.centerx, nearest.rect.centery}")
+        # print(self.rect.center[0], self.rect.center[1])
+        # print(f"mon - {nearest.rect.centerx, nearest.rect.centery}")
         bullets.append(Bullet(self.rect.centerx, self.rect.centery, nearest.rect.centerx, nearest.rect.centery, bullet_speed, self.damage))
 
         # Создаем flash эффект

@@ -65,15 +65,8 @@ def play(screen):
                 if clicked_option == "играть":
                     player = dropdown_player.getSelected()
                     stage = dropdown_stage.getSelected()
-                    print(f"Player: {player} Stage: {stage}")
+                    # print(f"Player: {player} Stage: {stage}")
                     if player and stage:
-                        # if stage == 1:
                         start1(screen, stage, player)
-                        # elif stage == 2:
-                        #     start2(screen)
-                        # running = False
-                        # dropdown_player.hide()
-                        # dropdown_stage.hide()
-        
         pygame_widgets.update(events)
         pygame.display.flip()

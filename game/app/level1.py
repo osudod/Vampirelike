@@ -53,6 +53,8 @@ def start1(screen, stage, player):
     from random import randint, uniform
     from Melee_player import MeleePlayer
     from GunPlayer import GunPlayer
+    from BombPlayer import BombPlayer
+    from ExplosionEffect import ExplosionEffect
     
     def tran_time(timer):
         '''Transfer time(seconds) -> time(00:00)'''
@@ -98,7 +100,7 @@ def start1(screen, stage, player):
         image = "../assets/player/melee.png"
         dmg = 1
         hp = 100
-        spd = 2
+        spd = 5
         player1 = MeleePlayer(image=image,damage=dmg, hp=hp, speed=spd, x=x, y=y)
     if player == 2:
         image = "../assets/player/gun.png"
@@ -112,7 +114,9 @@ def start1(screen, stage, player):
         dmg = 15
         hp = 30
         spd = 7
-        
+        player1 = BombPlayer(image, dmg, hp, spd,x,y)
+        bombs = []
+        explosions = []
     mode = "play"
     running = True
     while running:
@@ -150,9 +154,14 @@ def start1(screen, stage, player):
             loc = spawn_mons[randint(0,3)]
             monsters.append(Melee(image="../assets/enemes/New Piskel-1.png.png", damage=5, hp=50, speed=uniform(0,1),x=loc[0], y=loc[1]))
         
-        x1 = player1.move(keys)[0]
-        y1 = player1.move(keys)[1]
-        player1.draw(screen=screen, x=x1, y=y1 )
+        player1.move(keys)
+        
+        if isinstance(player1, BombPlayer):
+            player1.attack(monsters, bombs)
+        
+        player1.draw(screen=screen)
+        
+        
         if player == 1:
             player1.auto_attack(monsters)
             player1.draw_slash(screen)
@@ -165,20 +174,47 @@ def start1(screen, stage, player):
                 bullet.draw(screen)
             if hasattr(player1, "draw_flash"):
                 player1.draw_flash(screen)
+        elif player == 3:
+            for bomb in bombs[:]:
+                if not bomb.update():
+                    bombs.remove(bomb)
+                    continue
+
+                # Проверка столкновения с монстрами
+                for m in monsters:
+                    if bomb.rect.colliderect(m.rect):  # взрыв!
+                        explosions.append(ExplosionEffect(bomb.rect.centerx, bomb.rect.centery, bomb.explosion_radius, bomb.damage))
+                        bombs.remove(bomb)
+                        break
+            for exp in explosions[:]:
+                if not exp.update():
+                    explosions.remove(exp)
+                    continue
+
+                if not exp.done_damage:
+                    for m in monsters:
+                        dist = ((m.rect.centerx - exp.x)**2 + (m.rect.centery - exp.y)**2)**0.5
+                        if dist <= exp.radius:
+                            m.hp -= exp.damage
+                            print("💥 ВЗРЫВ! HP монстра:", m.hp)
+                    exp.done_damage = True
+                    
+            for bomb in bombs:
+                bomb.draw(screen)
+
+            for exp in explosions:
+                exp.draw(screen)
+            
 
         if monsters:
             for i in monsters:
-                i.draw(screen, i.rect.x, i.rect.y)
-                i.move(player1.rect)
-                monr = i.image.get_rect()
-                # monr.topleft = (i.x, i.y)
-                pla = player1.image.get_rect()
-                # pla.topleft = (x, y)
+                i.move(player1.rect.x, player1.rect.y)
+                i.draw(screen)
+                monr = i.rect
+                pla = player1.rect
                 if monr.colliderect(pla):
                     if str(i.attack(player1)).isdigit():
                         player1.hp = i.attack(player1)
-                    # else:
-                    #     print(i.attack(player1))
         
         
         screen.blit(font_large.render(text, True, "#ffffff"), (SCREEN_WIDTH//2-85, 30))
