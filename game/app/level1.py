@@ -152,7 +152,7 @@ def start1(screen, stage, player):
         
         if timer % 60 == 0:
             loc = spawn_mons[randint(0,3)]
-            monsters.append(Melee(image="../assets/enemes/New Piskel-1.png.png", damage=5, hp=50, speed=uniform(0,1),x=loc[0], y=loc[1]))
+            monsters.append(Melee(image="../assets/enemes/New Piskel-1.png.png", damage=5, hp=50, speed=uniform(0,0.6),x=loc[0], y=loc[1]))
         
         player1.move(keys)
         
@@ -168,7 +168,7 @@ def start1(screen, stage, player):
         elif player == 2:
             player1.attack(monsters,bullets)
             for bullet in bullets[:]:
-                if not bullet.update():
+                if not bullet.update(monsters):
                     bullets.remove(bullet)
             for bullet in bullets:
                 bullet.draw(screen)
@@ -195,8 +195,8 @@ def start1(screen, stage, player):
                     for m in monsters:
                         dist = ((m.rect.centerx - exp.x)**2 + (m.rect.centery - exp.y)**2)**0.5
                         if dist <= exp.radius:
-                            m.hp -= exp.damage
-                            print("💥 ВЗРЫВ! HP монстра:", m.hp)
+                            m.hp_actual -= exp.damage
+                            print("💥 ВЗРЫВ! HP монстра:", m.hp_actual)
                     exp.done_damage = True
                     
             for bomb in bombs:
@@ -208,7 +208,7 @@ def start1(screen, stage, player):
 
         if monsters:
             for i in monsters:
-                i.move(player1.rect.x, player1.rect.y)
+                i.move(player1.rect, monsters)
                 i.draw(screen)
                 monr = i.rect
                 pla = player1.rect

@@ -21,7 +21,7 @@ class Bullet:
         self.dir_x = dx / distance
         self.dir_y = dy / distance
 
-    def update(self):
+    def update(self, monsters):
         # Движение пули
         self.rect.x += self.dir_x * self.speed
         self.rect.y += self.dir_y * self.speed
@@ -30,6 +30,14 @@ class Bullet:
         if (self.rect.x < 0 or self.rect.x > SCREEN_WIDTH or
             self.rect.y < 0 or self.rect.y > SCREEN_HEIGHT):
             return False
+        
+        if monsters:
+            for monster in monsters[:]:
+                if self.rect.colliderect(monster.rect):
+                    monster.hp_actual -= self.damage
+                    print(f"💥 Пуля попала! HP монстра: {monster.hp_actual}")
+                    return False  # пуля исчезает после попадания
+
         return True
 
     def draw(self, screen):
