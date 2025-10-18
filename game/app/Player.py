@@ -5,6 +5,11 @@ class Player(Char):
     
     def __init__(self, image, damage, hp, speed, x, y):
         super().__init__(image, damage, hp, speed, x, y)
+        self.level = 1
+        self.xp = 0
+        self.xp_required = 50
+        self.kills = 0
+        self.max_hp = hp
     
     def draw(self, screen):
         return super().draw(screen)

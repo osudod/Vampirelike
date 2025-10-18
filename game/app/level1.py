@@ -50,12 +50,94 @@ def start1(screen, stage, player):
     from Player import Player
     from Melee_zombie import Melee
     import json
-    from random import randint, uniform
+    from random import randint, uniform, sample
     from Melee_player import MeleePlayer
     from GunPlayer import GunPlayer
     from BombPlayer import BombPlayer
     from ExplosionEffect import ExplosionEffect
     
+    def draw_level_up_menu(screen, level_up_options, font_big, font_small):
+        """
+        Отрисовать полупрозрачное меню выбора апгрейда (VS-style).
+        level_up_options — список 3 элементов (id, текст).
+        """
+        W, H = 800, 600  # если у тебя другие константы — подгони
+        overlay = pygame.Surface((W, H))
+        overlay.set_alpha(200)
+        overlay.fill((10, 10, 10))
+        screen.blit(overlay, (0, 0))
+
+        # меню-рамка
+        box_w, box_h = 560, 320
+        box_x = (W - box_w) // 2
+        box_y = (H - box_h) // 2
+        pygame.draw.rect(screen, (30, 30, 30), (box_x, box_y, box_w, box_h))
+        pygame.draw.rect(screen, (200, 200, 200), (box_x, box_y, box_w, box_h), 3)
+
+        # Заголовок
+        title = font_small.render("ВЫБЕРИТЕ УЛУЧШЕНИЕ", True, (255, 215, 0))
+        screen.blit(title, (box_x + 60, box_y + 20))
+        font_small1 = pygame.font.SysFont('Arial', 16)
+        # Опции
+        for i, opt in enumerate(level_up_options):
+            idx = i + 1
+            text = f"[{idx}] {opt[1]}"
+            opt_surf = font_small.render(text, True, (255, 255, 255))
+            # Блок опции (декоративный)
+            opt_box_x = box_x + 40
+            opt_box_y = box_y + 90 + i * 70
+            opt_box_w = box_w - 80
+            opt_box_h = 56
+            pygame.draw.rect(screen, (45, 45, 45), (opt_box_x, opt_box_y, opt_box_w, opt_box_h))
+            pygame.draw.rect(screen, (100, 100, 100), (opt_box_x, opt_box_y, opt_box_w, opt_box_h), 2)
+            screen.blit(opt_surf, (opt_box_x + 12, opt_box_y + 8))
+
+        # Подсказка
+        hint = font_small1.render("Нажмите 1 / 2 / 3 чтобы выбрать. Игра возобновится.", True, (200, 200, 200))
+        screen.blit(hint, (box_x + 40, box_y + box_h - 40))
+    
+    def apply_cooldown_reduction(player, factor=0.8, min_cd=100):
+        """
+        Универсально уменьшает любую известную переменную перезарядки у игрока
+        (attack_cooldown, cooldown, т.п.). Бережно: не опустим ниже min_cd (ms).
+        """
+        names = ["attack_cooldown", "cooldown", "attack_cd", "reload_time"]
+        for n in names:
+            if hasattr(player, n):
+                cur = getattr(player, n)
+                try:
+                    new = max(int(cur * factor), min_cd)
+                except Exception:
+                    # если значение хранится в секундах — попробуем float
+                    try:
+                        new = max(cur * factor, min_cd/1000.0)
+                    except Exception:
+                        continue
+                setattr(player, n, new)
+
+    def build_random_level_options():
+        """
+        Возвращает 3 случайных опции из полного списка (4).
+        Каждая опция — кортеж (id, текст).
+        """
+        all_opts = [
+            ("dmg", "+10 УРОН"),
+            ("spd", "+1 СКОРОСТЬ"),
+            ("hp", "+30 HP и ЛЕЧЕНИЕ"),
+            ("cd", "Быстрее атаки (-20% КД)")  # отображаемый текст по твоей просьбе
+        ]
+        # случайно выбираем 3 без повторов
+        return sample(all_opts, 3)
+
+    def draw_progress_ui(screen, kills, xp, level, xp_required, font_small):
+        """
+        Рисует верхнюю информационную панель: Kills / XP / LVL
+        font_small — pygame.font объект, передать тот, который используешь
+        """
+        text = f"Kills: {kills}   |   XP: {xp} / {xp_required}   |   LVL: {level}"
+        surf = font_small.render(text, True, (255, 255, 255))
+        screen.blit(surf, (12, 8))
+        
     def tran_time(timer):
         '''Transfer time(seconds) -> time(00:00)'''
         if len(str(timer)) == 1 and timer < 60:
@@ -98,13 +180,13 @@ def start1(screen, stage, player):
     y = 600 // 2
     if player == 1:
         image = "../assets/player/melee.png"
-        dmg = 1
+        dmg = 40
         hp = 100
         spd = 5
         player1 = MeleePlayer(image=image,damage=dmg, hp=hp, speed=spd, x=x, y=y)
     if player == 2:
         image = "../assets/player/gun.png"
-        dmg = 10
+        dmg = 30
         hp = 70
         spd = 3
         player1 = GunPlayer(image, dmg, hp, spd,x,y)
@@ -119,6 +201,13 @@ def start1(screen, stage, player):
         explosions = []
     mode = "play"
     running = True
+    
+    
+    level_up_active = False  # Когда TRUE — игра ставится на паузу
+    level_up_options = [] 
+    
+    
+    
     while running:
         if stage == 1:
             screen.fill("#4a964a")
@@ -132,12 +221,48 @@ def start1(screen, stage, player):
             if event.type == pygame.QUIT:
                 running = False
                 sys.exit()
+            if level_up_active:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_1:
+                        chosen = level_up_options[0][0]  # id опции
+                    elif event.key == pygame.K_2:
+                        chosen = level_up_options[1][0]
+                    elif event.key == pygame.K_3:
+                        chosen = level_up_options[2][0]
+                    else:
+                        chosen = None
+
+                    if chosen:
+                        # применяем эффект
+                        if chosen == "dmg":
+                            player1.damage = getattr(player1, "damage", 1) + 10
+                        elif chosen == "spd":
+                            player1.speed = getattr(player1, "speed", 1) + 1
+                        elif chosen == "hp":
+                            # обеспечим наличие max_hp
+                            if not hasattr(player1, "max_hp"):
+                                player1.max_hp = getattr(player1, "hp", 100)
+                            player1.max_hp += 30
+                            # лечим игрока полностью
+                            if hasattr(player1, "hp"):
+                                player1.hp = player1.max_hp
+                            else:
+                                setattr(player1, "hp", player1.max_hp)
+                        elif chosen == "cd":
+                            apply_cooldown_reduction(player1, factor=0.8, min_cd=500)
+
+                        # закрываем меню
+                        level_up_active = False
+                        level_up_options = []
+                # игнорируем остальные события во время меню
+                continue
             if event.type == pygame.USEREVENT: 
                 if mode == "play":
                     timer += 1
                     text = tran_time(timer) if timer <= 1800 else "30:00"
         
         keys = pygame.key.get_pressed()
+        
         
         if keys[pygame.K_ESCAPE]:
             mode = "pause"
@@ -147,7 +272,12 @@ def start1(screen, stage, player):
             mode = "play"
             
         
-
+        # если активен левелап — рисуем меню и пропускаем апдейты
+        if level_up_active:
+            draw_level_up_menu(screen, level_up_options, font_large, font_small)
+            pygame.display.flip()
+            clock.tick(60)
+            continue  # переходим к следующему кадру, остальная логика не выполняется
         
         
         if timer % 60 == 0:
@@ -168,7 +298,7 @@ def start1(screen, stage, player):
         elif player == 2:
             player1.attack(monsters,bullets)
             for bullet in bullets[:]:
-                if not bullet.update(monsters):
+                if not bullet.update(monsters, player1):
                     bullets.remove(bullet)
             for bullet in bullets:
                 bullet.draw(screen)
@@ -196,7 +326,11 @@ def start1(screen, stage, player):
                         dist = ((m.rect.centerx - exp.x)**2 + (m.rect.centery - exp.y)**2)**0.5
                         if dist <= exp.radius:
                             m.hp_actual -= exp.damage
-                            print("💥 ВЗРЫВ! HP монстра:", m.hp_actual)
+                            # print("💥 ВЗРЫВ! HP монстра:", m.hp_actual)
+                            if m.hp_actual <= 0:
+                                player1.xp += 10
+                                player1.kills += 1
+                                monsters.remove(m)
                     exp.done_damage = True
                     
             for bomb in bombs:
@@ -205,6 +339,12 @@ def start1(screen, stage, player):
             for exp in explosions:
                 exp.draw(screen)
             
+        if player1.xp >= player1.xp_required:
+            level_up_active = True
+            player1.xp -= player1.xp_required
+            player1.xp_required = int(player1.xp_required * 1.4)  # XP растёт
+            player1.level += 1
+            level_up_options = build_random_level_options()
 
         if monsters:
             for i in monsters:
@@ -219,6 +359,9 @@ def start1(screen, stage, player):
         
         screen.blit(font_large.render(text, True, "#ffffff"), (SCREEN_WIDTH//2-85, 30))
         
+        # рисуем верхнюю панель со статистикой
+        draw_progress_ui(screen, player1.kills, player1.xp, player1.level, player1.xp_required, font_small)
+
         
         
         clock.tick(60)

@@ -48,7 +48,12 @@ class MeleePlayer(Player):
         for monster in monsters:
             if slash_rect.colliderect(monster.rect):
                 monster.hp_actual -= self.damage
-                print("⚔ Удар мечом! HP монстра:", monster.hp_actual)
+                # print("⚔ Удар мечом! HP монстра:", monster.hp_actual)
+                if monster.hp_actual <= 0:
+                    monsters.remove(monster)
+                    self.xp += 10
+                    self.kills += 1
+                
 
     def create_slash_effect(self):
         self.slash_rect = pygame.Rect(self.rect.x, self.rect.y, 60, 60)
