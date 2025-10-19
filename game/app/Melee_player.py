@@ -33,6 +33,7 @@ class MeleePlayer(Player):
             self.slash_attack(monsters)   # Урон монстрам
             self.create_slash_effect()   # Эффект удара
 
+
     def slash_attack(self, monsters):
         slash_rect = pygame.Rect(self.rect.x, self.rect.y, 60, 60)
         if self.last_dir == "right":

@@ -47,11 +47,11 @@ class Melee(Char):
         # Красный фон (потерянное HP)
         pygame.draw.rect(screen, (150, 0, 0), (bar_x, bar_y, bar_width, bar_height))
 
+        # Жёлтая "анимация урона" — выбывающая полоска
+        pygame.draw.rect(screen, (255, 200, 50), (bar_x, bar_y, bar_width * ratio_display, bar_height))
+        
         # Зелёная актуальная HP-полоска (мгновенная)
         pygame.draw.rect(screen, (0, 220, 70), (bar_x, bar_y, bar_width * ratio_actual, bar_height))
-
-        # Жёлтая "анимация урона" — выбывающая полоска
-        pygame.draw.rect(screen, (255, 200, 50), (bar_x, bar_y, bar_width * ratio_display, bar_height), 2)
         
         return super().draw(screen)
     

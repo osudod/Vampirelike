@@ -1,5 +1,5 @@
 
-def pause(screen):
+def pause(screen, info):
     
     import pygame
     import sys
@@ -9,7 +9,9 @@ def pause(screen):
     font_small = pygame.font.SysFont('Arial', 32)
     
     escape_button = Button(50,50,210,70,"Назад в игру")
-    menu_button = Button(50,150,230,70,"Выход в меню")
+    menu_button = Button(300,50,230,70,"Выход в меню")
+    
+    
     
     def handle_menu_click(pos):
         if escape_button.rect.collidepoint(pos):
@@ -17,10 +19,35 @@ def pause(screen):
         if menu_button.rect.collidepoint(pos):
             return "меню"
 
+    font_small = pygame.font.SysFont('Arial', 32)
+    font_large = pygame.font.SysFont('Arial', 64)
+    
+    info_title = font_large.render("Информация", True, "#ffffff")
+    info_title_rect = info_title.get_rect(center=(400,160))
+    
+    text_player = font_small.render("Персонаж: ", True, "#ffffff")
+    text_player_rect = text_player.get_rect(topleft=(50,220))
+    
+    if info[2] == 1:
+        player = "Самурай"
+    if info[2] == 2:
+        player = "Стрелок"
+    if info[2] == 3:
+        player = "Подрывник"
+    
+    player_chois = font_small.render(player, True, "#ffffff")
+    player_chois_rect = player_chois.get_rect(topleft=(210, 220))
+    
+    text_hp = font_small.render("Здоровье: ", True, "#ffffff")
+    text_hp_rect = text_hp.get_rect(topleft=(50,250))
+    
+    player_hp = font_small.render(str(info[0].hp_actual), True, "#ffffff")
+    player_hp_rect = player_hp.get_rect(topleft=(210, 250))
+    
     
     running = True
     while running:
-        screen.fill("#727272ff")
+        screen.fill("#770000ff")
         
         events = pygame.event.get()
         for event in events:
@@ -40,6 +67,12 @@ def pause(screen):
         escape_button.draw(screen,font_small)
         menu_button.draw(screen, font_small)
         
+        screen.blit(info_title, info_title_rect)
+        screen.blit(text_player, text_player_rect)
+        screen.blit(player_chois, player_chois_rect)
+        screen.blit(text_hp, text_hp_rect)
+        screen.blit(player_hp, player_hp_rect)
+        
         pygame.display.flip()
 
 def start1(screen, stage, player):
@@ -55,6 +88,7 @@ def start1(screen, stage, player):
     from GunPlayer import GunPlayer
     from BombPlayer import BombPlayer
     from ExplosionEffect import ExplosionEffect
+    from WaveManaget import WaveManager
     
     def draw_level_up_menu(screen, level_up_options, font_big, font_small):
         """
@@ -168,7 +202,7 @@ def start1(screen, stage, player):
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 600
     
-    spawn_mons = [(10, SCREEN_HEIGHT // 2),(SCREEN_WIDTH // 2, 10),(SCREEN_WIDTH - 50, SCREEN_HEIGHT // 2),(SCREEN_WIDTH // 2, SCREEN_HEIGHT - 50)]
+    spawn_mons = [(10, randint(250,350)),(randint(350,550), 10),(SCREEN_WIDTH - 50, randint(250,350)),(randint(450,550), SCREEN_HEIGHT- 50)]
     monsters = []
     
     timer = 0
@@ -206,6 +240,7 @@ def start1(screen, stage, player):
     level_up_active = False  # Когда TRUE — игра ставится на паузу
     level_up_options = [] 
     
+    wave = WaveManager()
     
     
     while running:
@@ -244,10 +279,10 @@ def start1(screen, stage, player):
                                 player1.max_hp = getattr(player1, "hp", 100)
                             player1.max_hp += 30
                             # лечим игрока полностью
-                            if hasattr(player1, "hp"):
-                                player1.hp = player1.max_hp
+                            if hasattr(player1, "hp_actual"):
+                                player1.hp_actual = player1.max_hp
                             else:
-                                setattr(player1, "hp", player1.max_hp)
+                                setattr(player1, "hp_actual", player1.max_hp)
                         elif chosen == "cd":
                             apply_cooldown_reduction(player1, factor=0.8, min_cd=500)
 
@@ -266,7 +301,7 @@ def start1(screen, stage, player):
         
         if keys[pygame.K_ESCAPE]:
             mode = "pause"
-            valuy = pause(screen)
+            valuy = pause(screen,[player1, wave, player, stage])
             if valuy == "меню":
                 running = False
             mode = "play"
@@ -279,10 +314,6 @@ def start1(screen, stage, player):
             clock.tick(60)
             continue  # переходим к следующему кадру, остальная логика не выполняется
         
-        
-        if timer % 60 == 0:
-            loc = spawn_mons[randint(0,3)]
-            monsters.append(Melee(image="../assets/enemes/New Piskel-1.png.png", damage=5, hp=50, speed=uniform(0,0.6),x=loc[0], y=loc[1]))
         
         player1.move(keys)
         
@@ -346,6 +377,7 @@ def start1(screen, stage, player):
             player1.level += 1
             level_up_options = build_random_level_options()
 
+        wave.update(timer, monsters, spawn_mons)
         if monsters:
             for i in monsters:
                 i.move(player1.rect, monsters)
@@ -353,9 +385,17 @@ def start1(screen, stage, player):
                 monr = i.rect
                 pla = player1.rect
                 if monr.colliderect(pla):
-                    if str(i.attack(player1)).isdigit():
-                        player1.hp = i.attack(player1)
+                    current_time = pygame.time.get_ticks()
+                    if not player1.invincible:  # урон можно получить только если не неуязвим
+                        player1.hp_actual -= i.damage
+                        player1.invincible = True
+                        player1.last_hit_time = current_time
+
         
+        if player1.invincible:
+            if pygame.time.get_ticks() - player1.last_hit_time >= player1.invincible_time:
+                player1.invincible = False
+
         
         screen.blit(font_large.render(text, True, "#ffffff"), (SCREEN_WIDTH//2-85, 30))
         
