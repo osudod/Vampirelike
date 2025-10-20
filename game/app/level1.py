@@ -1,79 +1,103 @@
 
 def pause(screen, info):
-    
     import pygame
     import sys
     from Buttons import Button
     
     font_large = pygame.font.SysFont('Arial', 64)
     font_small = pygame.font.SysFont('Arial', 32)
-    
-    escape_button = Button(50,50,210,70,"Назад в игру")
-    menu_button = Button(300,50,230,70,"Выход в меню")
-    
-    
-    
+
+    escape_button = Button(50, 500, 210, 70, "Назад в игру")
+    menu_button = Button(300, 500, 230, 70, "Выход в меню")
+
     def handle_menu_click(pos):
         if escape_button.rect.collidepoint(pos):
             return "назад"
         if menu_button.rect.collidepoint(pos):
             return "меню"
 
-    font_small = pygame.font.SysFont('Arial', 32)
-    font_large = pygame.font.SysFont('Arial', 64)
-    
-    info_title = font_large.render("Информация", True, "#ffffff")
-    info_title_rect = info_title.get_rect(center=(400,160))
-    
-    text_player = font_small.render("Персонаж: ", True, "#ffffff")
-    text_player_rect = text_player.get_rect(topleft=(50,220))
-    
-    if info[2] == 1:
-        player = "Самурай"
-    if info[2] == 2:
-        player = "Стрелок"
-    if info[2] == 3:
-        player = "Подрывник"
-    
-    player_chois = font_small.render(player, True, "#ffffff")
-    player_chois_rect = player_chois.get_rect(topleft=(210, 220))
-    
-    text_hp = font_small.render("Здоровье: ", True, "#ffffff")
-    text_hp_rect = text_hp.get_rect(topleft=(50,250))
-    
-    player_hp = font_small.render(str(info[0].hp_actual), True, "#ffffff")
-    player_hp_rect = player_hp.get_rect(topleft=(210, 250))
-    
-    
+    # === Извлекаем данные ===
+    player_obj = info[0]
+    wave = info[1]
+    player_id = info[2]
+
+    # Имя персонажа
+    if player_id == 1:
+        player_name = "Самурай"
+    elif player_id == 2:
+        player_name = "Стрелок"
+    elif player_id == 3:
+        player_name = "Подрывник"
+    else:
+        player_name = "Неизвестно"
+
+    # HP
+    if hasattr(player_obj, "hp_actual"): 
+        current_hp = int(player_obj.hp_actual)
+    else:
+        current_hp = int(player_obj.hp)
+
+    max_hp = getattr(player_obj, "max_hp", current_hp)
+
+    # Урон
+    damage = getattr(player_obj, "damage", 0)
+
+    # Скорость
+    speed = getattr(player_obj, "speed", 0)
+
+    # КД (ищем правильное поле)
+    if hasattr(player_obj, "attack_cooldown"):
+        cd_value = player_obj.attack_cooldown
+    elif hasattr(player_obj, "cooldown"):
+        cd_value = player_obj.cooldown
+    else:
+        cd_value = None
+
     running = True
     while running:
-        screen.fill("#770000ff")
-        
-        events = pygame.event.get()
-        for event in events:
+        screen.fill("#550000")
+
+        # === Заголовок ===
+        title = font_large.render("Пауза", True, "#ffffff")
+        screen.blit(title, (300, 50))
+
+        # === Информационный блок ===
+        info_lines = [
+            f"Персонаж: {player_name}",
+            f"Волна: {wave.current_wave}",
+            f"HP: {current_hp} / {max_hp}",
+            f"Урон: {damage}",
+            f"Скорость: {speed}"
+        ]
+
+        if cd_value:
+            cd_sec = round(cd_value / 1000, 2)  # мс → секунды
+            info_lines.append(f"КД: {cd_sec} сек")
+
+        # Рисуем каждую строку
+        for i, text in enumerate(info_lines):
+            line = font_small.render(text, True, "#ffffff")
+            screen.blit(line, (50, 150 + i * 40))
+
+        # === Кнопки ===
+        escape_button.draw(screen, font_small)
+        menu_button.draw(screen, font_small)
+
+        # === Обработка событий ===
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 clicked_option = handle_menu_click(event.pos)
                 if clicked_option == "назад":
-                    running = False
+                    return "назад"
                 if clicked_option == "меню":
                     pygame.mixer.music.stop()
                     return "меню"
-        
-        keys = pygame.key.get_pressed()
-        
-        escape_button.draw(screen,font_small)
-        menu_button.draw(screen, font_small)
-        
-        screen.blit(info_title, info_title_rect)
-        screen.blit(text_player, text_player_rect)
-        screen.blit(player_chois, player_chois_rect)
-        screen.blit(text_hp, text_hp_rect)
-        screen.blit(player_hp, player_hp_rect)
-        
+
         pygame.display.flip()
+
 
 def start1(screen, stage, player):
     
