@@ -26,16 +26,17 @@ class MeleePlayer(Player):
             self.last_dir = "down"
         return super().move(keys)
 
-    def auto_attack(self, monsters):
+    def auto_attack(self, monsters, ranged_zombies):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_attack_time >= self.attack_cooldown:
             self.last_attack_time = current_time
-            self.slash_attack(monsters)   # Урон монстрам
+            self.slash_attack(monsters, ranged_zombies)   # Урон монстрам
             self.create_slash_effect()   # Эффект удара
 
 
-    def slash_attack(self, monsters):
+    def slash_attack(self, monsters, ranged_zombies):
         slash_rect = pygame.Rect(self.rect.x, self.rect.y, 60, 60)
+        
         if self.last_dir == "right":
             slash_rect.midleft = self.rect.midright
         elif self.last_dir == "left":
@@ -52,6 +53,15 @@ class MeleePlayer(Player):
                 # print("⚔ Удар мечом! HP монстра:", monster.hp_actual)
                 if monster.hp_actual <= 0:
                     monsters.remove(monster)
+                    self.xp += 10
+                    self.kills += 1
+                    
+        for monster in ranged_zombies:
+            if slash_rect.colliderect(monster.rect):
+                monster.hp_actual -= self.damage
+                # print("⚔ Удар мечом! HP монстра:", monster.hp_actual)
+                if monster.hp_actual <= 0:
+                    ranged_zombies.remove(monster)
                     self.xp += 10
                     self.kills += 1
                 

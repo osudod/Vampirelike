@@ -228,6 +228,8 @@ def start1(screen, stage, player):
     
     spawn_mons = [(10, randint(250,350)),(randint(350,550), 10),(SCREEN_WIDTH - 50, randint(250,350)),(randint(450,550), SCREEN_HEIGHT- 50)]
     monsters = []
+    ranged_zombies = []
+    enemy_bullets = []
     
     timer = 0
     pygame.time.set_timer(pygame.USEREVENT, 1000)
@@ -342,18 +344,18 @@ def start1(screen, stage, player):
         player1.move(keys)
         
         if isinstance(player1, BombPlayer):
-            player1.attack(monsters, bombs)
+            player1.attack(monsters, bombs, ranged_zombies)
         
         player1.draw(screen=screen)
         
         
         if player == 1:
-            player1.auto_attack(monsters)
+            player1.auto_attack(monsters, ranged_zombies)
             player1.draw_slash(screen)
         elif player == 2:
-            player1.attack(monsters,bullets)
+            player1.attack(monsters,bullets, ranged_zombies)
             for bullet in bullets[:]:
-                if not bullet.update(monsters, player1):
+                if not bullet.update(monsters, player1, ranged_zombies):
                     bullets.remove(bullet)
             for bullet in bullets:
                 bullet.draw(screen)
@@ -366,11 +368,18 @@ def start1(screen, stage, player):
                     continue
 
                 # Проверка столкновения с монстрами
-                for m in monsters:
-                    if bomb.rect.colliderect(m.rect):  # взрыв!
-                        explosions.append(ExplosionEffect(bomb.rect.centerx, bomb.rect.centery, bomb.explosion_radius, bomb.damage))
-                        bombs.remove(bomb)
-                        break
+                if monsters:
+                    for m in monsters:
+                        if bomb.rect.colliderect(m.rect):  # взрыв!
+                            explosions.append(ExplosionEffect(bomb.rect.centerx, bomb.rect.centery, bomb.explosion_radius, bomb.damage))
+                            bombs.remove(bomb)
+                            break
+                if ranged_zombies:
+                    for m in ranged_zombies:
+                        if bomb.rect.colliderect(m.rect):  # взрыв!
+                            explosions.append(ExplosionEffect(bomb.rect.centerx, bomb.rect.centery, bomb.explosion_radius, bomb.damage))
+                            bombs.remove(bomb)
+                            break
             for exp in explosions[:]:
                 if not exp.update():
                     explosions.remove(exp)
@@ -381,11 +390,19 @@ def start1(screen, stage, player):
                         dist = ((m.rect.centerx - exp.x)**2 + (m.rect.centery - exp.y)**2)**0.5
                         if dist <= exp.radius:
                             m.hp_actual -= exp.damage
-                            # print("💥 ВЗРЫВ! HP монстра:", m.hp_actual)
                             if m.hp_actual <= 0:
                                 player1.xp += 10
                                 player1.kills += 1
                                 monsters.remove(m)
+                    exp.done_damage = True
+                    for m in ranged_zombies:
+                        dist = ((m.rect.centerx - exp.x)**2 + (m.rect.centery - exp.y)**2)**0.5
+                        if dist <= exp.radius:
+                            m.hp_actual -= exp.damage
+                            if m.hp_actual <= 0:
+                                player1.xp += 10
+                                player1.kills += 1
+                                ranged_zombies.remove(m)
                     exp.done_damage = True
                     
             for bomb in bombs:
@@ -401,7 +418,8 @@ def start1(screen, stage, player):
             player1.level += 1
             level_up_options = build_random_level_options()
 
-        wave.update(timer, monsters, spawn_mons)
+        wave.update(timer, monsters, spawn_mons, ranged_zombies)
+        
         if monsters:
             for i in monsters:
                 i.move(player1.rect, monsters)
@@ -415,7 +433,29 @@ def start1(screen, stage, player):
                         player1.invincible = True
                         player1.last_hit_time = current_time
 
-        
+        if ranged_zombies:
+            for enemy in ranged_zombies:
+                enemy.move_and_attack(player1.rect, player1.rect.center, enemy_bullets, ranged_zombies)
+                enemy.draw(screen)
+            
+        for bullet in enemy_bullets[:]:
+            bullet.update()
+            bullet.draw(screen)
+
+            # Проверка попадания в игрока
+            if bullet.rect.colliderect(player1.rect):
+                current_time = pygame.time.get_ticks()
+                if not player1.invincible:  # если не в i-frame
+                    player1.hp_actual -= bullet.damage
+                    player1.invincible = True
+                    player1.last_hit_time = current_time
+                enemy_bullets.remove(bullet)
+                continue
+
+            # Удаление пуль, если ушли за экран
+            if bullet.rect.x < -10 or bullet.rect.x > 810 or bullet.rect.y < -10 or bullet.rect.y > 610:
+                enemy_bullets.remove(bullet)
+                
         if player1.invincible:
             if pygame.time.get_ticks() - player1.last_hit_time >= player1.invincible_time:
                 player1.invincible = False
@@ -427,6 +467,6 @@ def start1(screen, stage, player):
         draw_progress_ui(screen, player1.kills, player1.xp, player1.level, player1.xp_required, font_small)
 
         
-        
+        wave.draw_boss_intro(screen, 800, 600)
         clock.tick(60)
         pygame.display.flip()

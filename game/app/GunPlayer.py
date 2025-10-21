@@ -13,7 +13,7 @@ class GunPlayer(Player):
         self.flash_time = 100  # 0.1 сек
         self.flash_created = 0
 
-    def attack(self, monsters, bullets):
+    def attack(self, monsters, bullets, ranged_monsters):
         if not monsters:
             return
 
@@ -22,6 +22,8 @@ class GunPlayer(Player):
             return
 
         # Поиск ближайшего монстра
+        # nearest1 = min(monsters, key=lambda m: ((m.rect.x - self.rect.x)**2 + (m.rect.y - self.rect.y)**2))
+        # nearest2 = min(ranged_monsters, key=lambda m: ((m.rect.x - self.rect.x)**2 + (m.rect.y - self.rect.y)**2))
         nearest = min(monsters, key=lambda m: ((m.rect.x - self.rect.x)**2 + (m.rect.y - self.rect.y)**2))
 
         # Создаем пулю

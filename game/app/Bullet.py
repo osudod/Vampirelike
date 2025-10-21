@@ -21,7 +21,7 @@ class Bullet:
         self.dir_x = dx / distance
         self.dir_y = dy / distance
 
-    def update(self, monsters, player):
+    def update(self, monsters, player, ranged_zombies):
         # Движение пули
         self.rect.x += self.dir_x * self.speed
         self.rect.y += self.dir_y * self.speed
@@ -38,6 +38,17 @@ class Bullet:
                     # print(f"💥 Пуля попала! HP монстра: {monster.hp_actual}")
                     if monster.hp_actual <= 0:
                         monsters.remove(monster)
+                        player.xp += 10
+                        player.kills += 1
+                    return False  # пуля исчезает после попадания
+                
+        if ranged_zombies:
+            for monster in ranged_zombies[:]:
+                if self.rect.colliderect(monster.rect):
+                    monster.hp_actual -= self.damage
+                    # print(f"💥 Пуля попала! HP монстра: {monster.hp_actual}")
+                    if monster.hp_actual <= 0:
+                        ranged_zombies.remove(monster)
                         player.xp += 10
                         player.kills += 1
                     return False  # пуля исчезает после попадания
