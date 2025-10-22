@@ -7,6 +7,7 @@ import pygame
 from menu import play
 from Settings import draw_settings
 from Buttons import Button
+from Shop import shop
 
 pygame.init()
 
@@ -25,7 +26,8 @@ font_small = pygame.font.SysFont('Arial', 32)
 
 play_button = Button(250, 200, 300, 60, "Играть")
 settings_button = Button(250, 300, 300, 60, "Настройки")
-exit_button = Button(250, 400, 300, 60, "Выход")
+shop_button = Button(250, 400, 300, 60, "Магазин")
+exit_button = Button(250, 500, 300, 60, "Выход")
 
 def handle_menu_click(pos):
     if play_button.rect.collidepoint(pos):
@@ -34,6 +36,8 @@ def handle_menu_click(pos):
         return "настройки"
     elif exit_button.rect.collidepoint(pos):
         return "выход"
+    elif shop_button.rect.collidepoint(pos):
+        return "магазин"
 
 game_state = 'menu'
 running = True
@@ -51,6 +55,8 @@ while running:
                 running = False
             elif clicked_option == "настройки":
                 game_state = "settings"
+            elif clicked_option == "магазин":
+                game_state = "shop"
     screen.fill(THEME) 
     
     title = font_large.render("Dead world", True, "#ffffff")
@@ -58,6 +64,7 @@ while running:
     
     play_button.draw(screen,font_small)
     settings_button.draw(screen,font_small)
+    shop_button.draw(screen, font_small)
     exit_button.draw(screen,font_small)
     
     screen.blit(title, title_rect)
@@ -70,6 +77,9 @@ while running:
         game_state = "menu"
     elif game_state == "settings":
         draw_settings(screen)
+        game_state = "menu"
+    elif game_state == "shop":
+        shop(screen)
         game_state = "menu"
 
 pygame.quit()

@@ -113,6 +113,7 @@ def start1(screen, stage, player):
     from BombPlayer import BombPlayer
     from ExplosionEffect import ExplosionEffect
     from WaveManaget import WaveManager
+    from DeathScreen import death_screen
     
     def draw_level_up_menu(screen, level_up_options, font_big, font_small):
         """
@@ -465,6 +466,16 @@ def start1(screen, stage, player):
         
         # рисуем верхнюю панель со статистикой
         draw_progress_ui(screen, player1.kills, player1.xp, player1.level, player1.xp_required, font_small)
+
+        if player1.hp_actual <= 0:
+            val = death_screen(screen, [player1, wave])
+            if val == "retry":
+                return start1(screen, stage, player)   # перезапуск уровня
+            elif val == "menu":
+                running = False   # возврат в главное меню
+            elif val == "exit":
+                pygame.quit()
+                sys.exit()
 
         
         wave.draw_boss_intro(screen, 800, 600)

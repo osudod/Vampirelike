@@ -3,7 +3,7 @@ import pygame
 
 class Player(Char):
     
-    def __init__(self, image, damage, hp, speed, x, y):
+    def __init__(self, image, damage, hp, speed, x, y, regen):
         super().__init__(image, damage, hp, speed, x, y)
         self.level = 1
         self.xp = 0
@@ -15,6 +15,7 @@ class Player(Char):
         self.invincible = False
         self.invincible_time = 2000  # длительность неуязвимости в миллисекундах
         self.last_hit_time = 0
+        self.regen = regen
     
     def draw(self, screen):
         

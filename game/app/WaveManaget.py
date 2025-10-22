@@ -22,7 +22,7 @@ class WaveManager:
     def update(self, timer, monsters, spawn_points, ranged_zombies):
         # Если волна очищена — запускаем новую
         if self.wave_cleared:
-            print(f"🔥 Волна {self.current_wave} началась!")
+            # print(f"🔥 Волна {self.current_wave} началась!")
             self.wave_cleared = False
             self.spawned_in_wave = 0
             

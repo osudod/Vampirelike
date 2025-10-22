@@ -8,7 +8,7 @@ def play(screen):
     import pygame_widgets
     from Buttons import Button
     from level1 import start1
-    from level2 import start2
+    import json
     
     THEME = "#984141"
     SCREEN_WIDTH = 800
@@ -17,7 +17,15 @@ def play(screen):
     font_small = pygame.font.SysFont('Arial', 32)
     font_large = pygame.font.SysFont('Arial', 64)
     
-    dropdown_player = Dropdown(screen, 300, 200, 200, 50, name='-',choices=['Самурай','Стрелок','Подрывник'], colour=(255,0,0), values=[1, 2, 3], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
+    mas = {}
+    with open("save.json") as file:
+        mas = json.load(file)
+    
+    if mas["shop"]["bomber"] == "yes":
+        dropdown_player = Dropdown(screen, 300, 200, 200, 50, name='-',choices=['Самурай','Стрелок','Подрывник'], colour=(255,0,0), values=[1, 2, 3], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
+    else:
+        dropdown_player = Dropdown(screen, 300, 200, 200, 50, name='-',choices=['Самурай','Стрелок'], colour=(255,0,0), values=[1, 2], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
+    
     dropdown_stage = Dropdown(screen, 300, 300, 200, 50, name='-',choices=["Поляна", "Город"], colour=(255,0,0), values=[1, 2], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
     back_button_game = Button(40, 75, 100, 60,"Назад")
     play_button_game = Button(300, 500, 200, 80,"Играть")
