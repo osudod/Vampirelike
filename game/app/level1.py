@@ -269,6 +269,9 @@ def start1(screen, stage, player):
     
     wave = WaveManager()
     
+    if mas["shop"]["healing"]["buy"] == "yes":
+        player1.regen = mas["shop"]["healing"]["level"]
+    
     
     while running:
         if stage == 1:
@@ -348,6 +351,13 @@ def start1(screen, stage, player):
             player1.attack(monsters, bombs, ranged_zombies)
         
         player1.draw(screen=screen)
+        
+        if player1.regen != 0:
+            current_time1 = pygame.time.get_ticks()
+            if current_time1 - player1.last_regen >= player1.regen_cooldown:
+                player1.last_regen = current_time1
+                if player1.hp_actual < player1.max_hp:
+                    player1.hp_actual = min(player1.hp_actual + player1.regen, player1.max_hp)
         
         
         if player == 1:
