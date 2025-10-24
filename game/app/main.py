@@ -3,6 +3,7 @@ import os
 import sys
 import math
 
+
 import pygame
 from menu import play
 from Settings import draw_settings
@@ -19,7 +20,8 @@ THEME = "#984141"
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Dead world")
 clock = pygame.time.Clock()
-    
+
+pygame.display.set_icon(pygame.image.load("./app/icon.ico"))
 
 font_large = pygame.font.SysFont('Arial', 64)
 font_small = pygame.font.SysFont('Arial', 32)

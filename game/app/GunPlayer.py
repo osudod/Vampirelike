@@ -22,14 +22,10 @@ class GunPlayer(Player):
             return
 
         # Поиск ближайшего монстра
-        # nearest1 = min(monsters, key=lambda m: ((m.rect.x - self.rect.x)**2 + (m.rect.y - self.rect.y)**2))
-        # nearest2 = min(ranged_monsters, key=lambda m: ((m.rect.x - self.rect.x)**2 + (m.rect.y - self.rect.y)**2))
         nearest = min(monsters, key=lambda m: ((m.rect.x - self.rect.x)**2 + (m.rect.y - self.rect.y)**2))
 
         # Создаем пулю
         bullet_speed = self.speed + 3
-        # print(self.rect.center[0], self.rect.center[1])
-        # print(f"mon - {nearest.rect.centerx, nearest.rect.centery}")
         bullets.append(Bullet(self.rect.centerx, self.rect.centery, nearest.rect.centerx, nearest.rect.centery, bullet_speed, self.damage))
 
         # Создаем flash эффект

@@ -263,6 +263,13 @@ def start1(screen, stage, player):
     mode = "play"
     running = True
     
+    if stage == 1:
+            images = pygame.image.load("../assets/URpNGpng.png")
+            images_rect = images.get_rect(topleft=(0,0))
+    if stage == 2:
+            images = pygame.image.load("../assets/C I p p 6.png")
+            images_rect = images.get_rect(topleft=(0,0))
+    
     
     level_up_active = False  # Когда TRUE — игра ставится на паузу
     level_up_options = [] 
@@ -473,6 +480,8 @@ def start1(screen, stage, player):
 
         
         screen.blit(font_large.render(text, True, "#ffffff"), (SCREEN_WIDTH//2-85, 30))
+        
+        # screen.blit(images,images_rect)
         
         # рисуем верхнюю панель со статистикой
         draw_progress_ui(screen, player1.kills, player1.xp, player1.level, player1.xp_required, font_small)

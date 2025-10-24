@@ -35,7 +35,6 @@ class Bullet:
             for monster in monsters[:]:
                 if self.rect.colliderect(monster.rect):
                     monster.hp_actual -= self.damage
-                    # print(f"💥 Пуля попала! HP монстра: {monster.hp_actual}")
                     if monster.hp_actual <= 0:
                         monsters.remove(monster)
                         player.xp += 10
@@ -46,7 +45,6 @@ class Bullet:
             for monster in ranged_zombies[:]:
                 if self.rect.colliderect(monster.rect):
                     monster.hp_actual -= self.damage
-                    # print(f"💥 Пуля попала! HP монстра: {monster.hp_actual}")
                     if monster.hp_actual <= 0:
                         ranged_zombies.remove(monster)
                         player.xp += 10
