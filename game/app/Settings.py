@@ -1,22 +1,34 @@
 
 def draw_settings(screen):
     
-    import json
     import pygame
-    import sys
-    import os
+    import sys, os
     import pygame_widgets
     from pygame_widgets.slider import Slider
     from Buttons import Button
+    from Save_manager import load_save, save_game, get_save_path
+
     
+    def resource_path(relative_path):
+        """Возвращает путь к ресурсу (работает и в exe, и при разработке)"""
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
     
     SCREEN_WIDTH = 800
     THEME = "#984141"
 
-    pygame.mixer.music.load("../assets/music/keys-of-moon-lonesome-journey.mp3")
-    mas = {}
-    with open("save.json") as file:
-            mas = json.load(file)
+    pygame.mixer.music.load(resource_path("assets/music/keys-of-moon-lonesome-journey.mp3"))
+    try:
+        mas = load_save()
+    except Exception:
+        print("Ошибка: сейв повреждён или принадлежит другому компьютеру.")
+        # Можно пересоздать новый сейв
+        os.remove(get_save_path())
+        mas = load_save()
+
     music_volume = mas["music"]
     pygame.mixer.music.set_volume(music_volume)
     pygame.mixer.music.play(-1)
@@ -44,12 +56,15 @@ def draw_settings(screen):
             return "сброс"
         
     def save(music_vol):
-        mas = {}
-        with open("save.json") as file:
-            mas = json.load(file)
+        try:
+            mas = load_save()
+        except Exception:
+            print("Ошибка: сейв повреждён или принадлежит другому компьютеру.")
+            # Можно пересоздать новый сейв
+            os.remove(get_save_path())
+            mas = load_save()
         mas["music"] = music_vol
-        with open("save.json", 'w') as file:
-            json.dump(mas, file)
+        save_game(mas)
         
     running = True
     while running:
@@ -75,8 +90,7 @@ def draw_settings(screen):
                     save(music_volume)
                 if clicked_option == "сброс":
                     mas = {"music": 0.5, "kills": 0, "shop": {"bomber": "no", "healing": {"buy": "no", "level": 0}}}
-                    with open("save.json", 'w') as file:
-                        json.dump(mas, file)
+                    save_game(mas)
         music_volume = slider.getValue()
         pygame.mixer.music.set_volume(music_volume)
         pygame_widgets.update(events)

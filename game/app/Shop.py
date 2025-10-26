@@ -5,8 +5,8 @@ def shop(screen):
     
     import pygame
     from Buttons import Button
-    import json
-    import sys
+    import sys, os
+    from Save_manager import save_game, load_save, get_save_path
     
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 600
@@ -19,9 +19,13 @@ def shop(screen):
     font_large = pygame.font.SysFont('Arial', 64)
     font_small = pygame.font.SysFont('Arial', 32)
     
-    mas = {}
-    with open("save.json") as file:
-        mas = json.load(file)
+    try:
+        mas = load_save()
+    except Exception:
+        print("Ошибка: сейв повреждён или принадлежит другому компьютеру.")
+        # Можно пересоздать новый сейв
+        os.remove(get_save_path())
+        mas = load_save()
         
     back_button_settings = Button(40, 75, 100, 60,"Назад")
     
@@ -35,9 +39,6 @@ def shop(screen):
 
     text_kills = font_small.render("Убийства:", True, "#ffffff")
     text_kills_rect = text_kills.get_rect(topleft=(150,170))
-    
-    # text_kills_count = font_small.render(str(mas["kills"]).ljust(20,' '), True, "#ffffff")
-    # text_kills_count_rect = text_kills_count.get_rect(topleft=(300, 170))
 
     text_heal = font_small.render("Регенерация", True, "#ffffff")
     text_heal_rect = text_heal.get_rect(topleft=(100,250))
@@ -50,9 +51,6 @@ def shop(screen):
     
     text_bomb = font_small.render("Подрывник", True, "#ffffff")
     text_bomb_rect = text_bomb.get_rect(topleft=(100,400))
-    
-    # text_bomb_buy = font_small.render("есть" if mas["shop"]["bomber"] == "yes" else "нету", True, "#ffffff")
-    # text_bomb_buy_rect = text_bomb_buy.get_rect(topleft=(100, 440))
     
     text_bomb_buy_req = font_small.render("100 000 убийств открытие", True, "#ffffff")
     text_bomb_buy_req_rect = text_bomb_buy_req.get_rect(topleft=(100, 480))
@@ -89,8 +87,7 @@ def shop(screen):
                     mas["kills"] = amount
                     mas["shop"]["healing"]["level"] = lvl
                     mas["shop"]["healing"]["buy"] = cond
-                    with open("save.json", "w") as file:
-                        json.dump(mas, file)
+                    save_game(mas)
                 if clicked_option == "подрывник":
                     amount = mas["kills"]
                     cond = mas["shop"]["bomber"]
@@ -99,8 +96,7 @@ def shop(screen):
                         cond = "yes"
                     mas["shop"]["bomber"] = cond
                     mas["kills"] = amount
-                    with open("save.json", "w") as file:
-                        json.dump(mas, file)
+                    save_game(mas)
         screen.fill(THEME) 
         
         title = font_large.render("Магазин", True, "#ffffff")

@@ -71,7 +71,7 @@ def pause(screen, info):
         ]
 
         if cd_value:
-            cd_sec = round(cd_value / 1000, 2)  # мс → секунды
+            cd_sec = round(cd_value / 1000, 4)  # мс → секунды
             info_lines.append(f"КД: {cd_sec} сек")
 
         # Рисуем каждую строку
@@ -106,7 +106,6 @@ def start1(screen, stage, player):
     from math import sqrt
     from Player import Player
     from Melee_zombie import Melee
-    import json
     from random import randint, uniform, sample
     from Melee_player import MeleePlayer
     from GunPlayer import GunPlayer
@@ -114,6 +113,16 @@ def start1(screen, stage, player):
     from ExplosionEffect import ExplosionEffect
     from WaveManaget import WaveManager
     from DeathScreen import death_screen
+    import os
+    from Save_manager import load_save, get_save_path
+    
+    def resource_path(relative_path):
+        """Получает путь к ресурсу при запуске из exe"""
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
     
     def draw_level_up_menu(screen, level_up_options, font_big, font_small):
         """
@@ -155,7 +164,7 @@ def start1(screen, stage, player):
         hint = font_small1.render("Нажмите 1 / 2 / 3 чтобы выбрать. Игра возобновится.", True, (200, 200, 200))
         screen.blit(hint, (box_x + 40, box_y + box_h - 40))
     
-    def apply_cooldown_reduction(player, factor=0.8, min_cd=100):
+    def apply_cooldown_reduction(player, factor=0.8, min_cd=10):
         """
         Универсально уменьшает любую известную переменную перезарядки у игрока
         (attack_cooldown, cooldown, т.п.). Бережно: не опустим ниже min_cd (ms).
@@ -212,12 +221,16 @@ def start1(screen, stage, player):
             return f"{minu}:{sec}"
     
     if stage == 1:
-        pygame.mixer.music.load("../assets/music/82872.mp3")
+        pygame.mixer.music.load(resource_path("assets/music/82872.mp3"))
     if stage == 2:
-        pygame.mixer.music.load("../assets/music/kino-less-than-i-used-to.mp3")
-    mas = {}
-    with open("save.json") as file:
-            mas = json.load(file)
+        pygame.mixer.music.load(resource_path("assets/music/kino-less-than-i-used-to.mp3"))
+    try:
+        mas = load_save()
+    except Exception:
+        print("Ошибка: сейв повреждён или принадлежит другому компьютеру.")
+        # Можно пересоздать новый сейв
+        os.remove(get_save_path())
+        mas = load_save()
     music_volume = mas["music"]
     pygame.mixer.music.set_volume(music_volume)
     pygame.mixer.music.play(-1)
@@ -240,20 +253,20 @@ def start1(screen, stage, player):
     x = 800 // 2
     y = 600 // 2
     if player == 1:
-        image = "../assets/player/melee.png"
+        image = resource_path("assets/player/melee.png")
         dmg = 40
         hp = 100
         spd = 5
         player1 = MeleePlayer(image=image,damage=dmg, hp=hp, speed=spd, x=x, y=y)
     if player == 2:
-        image = "../assets/player/gun.png"
+        image = resource_path("assets/player/gun.png")
         dmg = 30
         hp = 70
         spd = 3
         player1 = GunPlayer(image, dmg, hp, spd,x,y)
         bullets = []
     if player == 3:
-        image = "../assets/player/bomber.png"
+        image = resource_path("assets/player/bomber.png")
         dmg = 15
         hp = 30
         spd = 7
@@ -262,13 +275,6 @@ def start1(screen, stage, player):
         explosions = []
     mode = "play"
     running = True
-    
-    if stage == 1:
-            images = pygame.image.load("../assets/URpNGpng.png")
-            images_rect = images.get_rect(topleft=(0,0))
-    if stage == 2:
-            images = pygame.image.load("../assets/C I p p 6.png")
-            images_rect = images.get_rect(topleft=(0,0))
     
     
     level_up_active = False  # Когда TRUE — игра ставится на паузу
@@ -321,7 +327,7 @@ def start1(screen, stage, player):
                             else:
                                 setattr(player1, "hp_actual", player1.max_hp)
                         elif chosen == "cd":
-                            apply_cooldown_reduction(player1, factor=0.8, min_cd=500)
+                            apply_cooldown_reduction(player1, factor=0.8, min_cd=10)
 
                         # закрываем меню
                         level_up_active = False
@@ -331,7 +337,6 @@ def start1(screen, stage, player):
             if event.type == pygame.USEREVENT: 
                 if mode == "play":
                     timer += 1
-                    text = tran_time(timer) if timer <= 1800 else "30:00"
         
         keys = pygame.key.get_pressed()
         
@@ -341,6 +346,7 @@ def start1(screen, stage, player):
             valuy = pause(screen,[player1, wave, player, stage])
             if valuy == "меню":
                 running = False
+                pygame.mixer.music.stop()
             mode = "play"
             
         

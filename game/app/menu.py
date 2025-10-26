@@ -2,13 +2,13 @@
 def play(screen):
     
     import pygame
-    import sys
+    import sys, os
     from Buttons import Button
     from pygame_widgets.dropdown import Dropdown
     import pygame_widgets
     from Buttons import Button
     from level1 import start1
-    import json
+    from Save_manager import load_save, get_save_path
     
     THEME = "#984141"
     SCREEN_WIDTH = 800
@@ -17,9 +17,13 @@ def play(screen):
     font_small = pygame.font.SysFont('Arial', 32)
     font_large = pygame.font.SysFont('Arial', 64)
     
-    mas = {}
-    with open("save.json") as file:
-        mas = json.load(file)
+    try:
+        mas = load_save()
+    except Exception:
+        print("Ошибка: сейв повреждён или принадлежит другому компьютеру.")
+        # Можно пересоздать новый сейв
+        os.remove(get_save_path())
+        mas = load_save()
     
     if mas["shop"]["bomber"] == "yes":
         dropdown_player = Dropdown(screen, 300, 200, 200, 50, name='-',choices=['Самурай','Стрелок','Подрывник'], colour=(255,0,0), values=[1, 2, 3], direction='down', textColour=(255,255,255), textHAlign='centre', font=font_small)
@@ -73,7 +77,6 @@ def play(screen):
                 if clicked_option == "играть":
                     player = dropdown_player.getSelected()
                     stage = dropdown_stage.getSelected()
-                    # print(f"Player: {player} Stage: {stage}")
                     if player and stage:
                         start1(screen, stage, player)
         pygame_widgets.update(events)

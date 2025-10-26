@@ -1,10 +1,9 @@
 
 from random import randint, uniform
 from Melee_zombie import Melee
-from RangedZombie import RangedZombie
 import pygame
 import math
-
+import sys, os
 class WaveManager:
     def __init__(self):
         self.current_wave = 1
@@ -17,7 +16,15 @@ class WaveManager:
         self.boss_intro_active = False
         self.boss_intro_start = 0
         self.boss_intro_duration = 2000  # 2 секунды показа анимации
-        self.font = pygame.font.Font(None, 80) 
+        self.font = pygame.font.Font(None, 80)
+        
+    def resource_path(self, relative_path):
+        """Получает путь к ресурсу при запуске из exe"""
+        try:
+            base_path = sys._MEIPASS
+        except Exception:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
 
     def update(self, timer, monsters, spawn_points, ranged_zombies):
         # Если волна очищена — запускаем новую
@@ -29,7 +36,7 @@ class WaveManager:
         if self.current_wave % 5 == 0 and not self.boss_active:
             loc = spawn_points[randint(0, 3)]
             boss = Melee(
-                image="../assets/enemes/New Piskel-1.png.png",  # можешь заменить на свою текстуру
+                image= self.resource_path("assets/enemes/New Piskel-1.png.png"),  # можешь заменить на свою текстуру
                 damage=10 + self.current_wave * 2,
                 hp=400 + self.current_wave * 100,
                 speed=0.5 + self.current_wave * 0.05,
@@ -47,7 +54,7 @@ class WaveManager:
         if self.spawned_in_wave < self.monsters_per_wave:
             loc = spawn_points[randint(0, 3)]
             monsters.append(Melee(
-                image="../assets/enemes/New Piskel-1.png.png",
+                image= self.resource_path("assets/enemes/New Piskel-1.png.png"),
                 damage=5 + self.current_wave,            # каждый раунд сильнее
                 hp=50 + self.current_wave * 10,          # больше HP
                 speed=uniform(0, 0.4 + self.current_wave * 0.05),  # скорость растет
@@ -66,14 +73,12 @@ class WaveManager:
         if self.current_wave % 5 == 0:
                     # волна с боссом завершается, когда босс убит
             if self.boss_active and len(monsters) == 0:
-                print(f"🏆 Босс побеждён! Волна {self.current_wave} завершена!")
                 self.current_wave += 1
                 self.monsters_per_wave = int(self.monsters_per_wave * 1.3)
                 self.wave_cleared = True
         # Проверяем, не убиты ли все монстры
         else:
             if self.spawned_in_wave >= self.monsters_per_wave and len(monsters) == 0 and len(ranged_zombies) == 0:
-                print(f"✅ Волна {self.current_wave} завершена!")
                 self.current_wave += 1
                 self.monsters_per_wave = int(self.monsters_per_wave * 1.4)  # растет
                 self.wave_cleared = True

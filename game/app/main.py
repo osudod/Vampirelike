@@ -1,8 +1,14 @@
 
 import os
 import sys
-import math
 
+def resource_path(relative_path):
+    """Получает путь к ресурсу при запуске из exe"""
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 import pygame
 from menu import play
@@ -21,7 +27,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Dead world")
 clock = pygame.time.Clock()
 
-pygame.display.set_icon(pygame.image.load("./app/icon.ico"))
+pygame.display.set_icon(pygame.image.load(resource_path("assets/icon.ico")))
 
 font_large = pygame.font.SysFont('Arial', 64)
 font_small = pygame.font.SysFont('Arial', 32)

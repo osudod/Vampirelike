@@ -1,8 +1,8 @@
 def death_screen(screen, info):
     import pygame
-    import sys
+    import sys, os
     from Buttons import Button
-    import json
+    from Save_manager import load_save, save_game, get_save_path
 
     player = info[0]
     kills = info[0].kills
@@ -75,15 +75,19 @@ def death_screen(screen, info):
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 action = handle_click(event.pos)
-                mas = {}
-                with open("save.json",'r') as file:
-                    mas = json.load(file)
+                try:
+                    mas = load_save()
+                except Exception:
+                    print("Ошибка: сейв повреждён или принадлежит другому компьютеру.")
+                    # Можно пересоздать новый сейв
+                    os.remove(get_save_path())
+                    mas = load_save()
                 mas["kills"] = mas["kills"] + kills
-                with open("save.json", 'w') as file:
-                    json.dump(mas, file)
+                save_game(mas)
                 if action == "retry":
                     return "retry"
                 if action == "menu":
+                    pygame.mixer.music.stop()
                     return "menu"
                 if action == "exit":
                     pygame.quit()
