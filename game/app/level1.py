@@ -337,6 +337,7 @@ def start1(screen, stage, player):
             if event.type == pygame.USEREVENT: 
                 if mode == "play":
                     timer += 1
+                    text = tran_time(timer)
         
         keys = pygame.key.get_pressed()
         

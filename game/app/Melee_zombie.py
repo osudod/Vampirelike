@@ -12,8 +12,8 @@ class Melee(Char):
         self.rect = self.image.get_rect(center=(x, y))
         self.x = x
         self.y = y
-        self.random_offset_x = random.uniform(-0.2, 0.2)
-        self.random_offset_y = random.uniform(-0.2, 0.2)
+        self.random_offset_x = random.uniform(-0.1 * speed, 0.1 * speed)
+        self.random_offset_y = random.uniform(-0.1 * speed, 0.1 * speed)
         # self.random_offset_x = 0
         # self.random_offset_y = 0
         self.max_hp = hp
@@ -65,14 +65,15 @@ class Melee(Char):
         SCREEN_HEIGHT = 600
         
         # --- 1. Притягиваемся к игроку ---
-        dx = target_rect.x - self.rect.x
-        dy = target_rect.y - self.rect.y
+        dx = target_rect.x - self.rect.centerx
+        dy = target_rect.y - self.rect.centery
 
         # нормализация для плавного движения
         length = (dx * dx + dy * dy) ** 0.5
-        if length != 0:
-            dx /= length
-            dy /= length
+        if length <= 0.01:
+            length = 0.01
+        dx /= length
+        dy /= length
 
         # применяем движение к игроку + лёгкий рандом (хаос)
         move_x = dx * self.speed + self.random_offset_x
@@ -94,8 +95,9 @@ class Melee(Char):
                 avoid_y += dist_y / dist
 
         # прибавляем эффект расхождения монстров
-        move_x += avoid_x * 0.2
-        move_y += avoid_y * 0.2
+        avoid_strength = max(0.1, 1 - (length / 200)) 
+        move_x += avoid_x * avoid_strength
+        move_y += avoid_y * avoid_strength
         self.pos_x += move_x
         self.pos_y += move_y
         # print(move_x, move_y)
